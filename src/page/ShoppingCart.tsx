@@ -13,7 +13,46 @@ import {
   Typography,
 } from "@mui/material";
 import "./ShoppingCart.scss";
+import { useEffect, useState } from "react";
+type cartDetailType = {
+  product:string,
+  quantity:number,
+  _id: string
+}
 const ShoppingCart = () => {
+  const cartIDLocal = localStorage.getItem("cartid");
+  const [cartDetail, setCartDetail] = useState<cartDetailType[]>([]);
+
+  useEffect(() => {
+    // Define the asynchronous function inside useEffect
+    const allCartItemOfUser = async (cartID: string) => {
+      if (!cartID) {
+        console.error("No cart ID found in localStorage");
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:3000/carts/${cartID}`);
+
+        if (!response.ok) {
+          // Handle HTTP errors
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const itemList = await response.json();
+        setCartDetail(itemList.products);
+        console.log(itemList.products)
+
+        // Update state with the fetched cart details
+        setCartDetail(itemList);
+      } catch (err) {
+        console.error("Failed to fetch cart details:", err);
+      }
+    };
+
+    allCartItemOfUser(cartIDLocal as string);
+  }, [cartIDLocal]); // cartIDLocal is a dependency
+
   return (
     <>
       <Container
@@ -37,7 +76,18 @@ const ShoppingCart = () => {
                   <TableCell align="right">TOTAL</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody></TableBody>
+              <TableBody>
+                {/* {
+                  cartDetail.map((item) => (
+                    <TableRow key={item.product}>
+                      <TableCell>{item.product}</TableCell>
+                      <TableCell align="right">PRICE</TableCell>
+                      <TableCell align="right">QUANTITY</TableCell>
+                      <TableCell align="right">TOTAL</TableCell>
+                    </TableRow>
+                  ))
+                } */}
+              </TableBody>
             </Table>
           </TableContainer>
         </Box>
@@ -68,7 +118,13 @@ const ShoppingCart = () => {
                 >
                   Coupon Code
                 </Typography>
-                <TextField hiddenLabel id="outlined-basic" variant="outlined" placeholder="Enter Coupon code here" defaultValue={""} />
+                <TextField
+                  hiddenLabel
+                  id="outlined-basic"
+                  variant="outlined"
+                  placeholder="Enter Coupon code here"
+                  defaultValue={""}
+                />
                 <Box
                   sx={{
                     width: "100%",

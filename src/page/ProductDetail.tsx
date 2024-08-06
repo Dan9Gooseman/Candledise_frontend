@@ -67,6 +67,7 @@ const ProductDetailButton = styled(Button)<ButtonProps>(() => ({
 }));
 
 const ProductDetail = () => {
+  const cartIDLocal = localStorage.getItem("cartid")
   const { user } = useUser();
   const { id } = useParams();
   const [product, setProduct] = useState<IProduct>();
@@ -105,12 +106,28 @@ const ProductDetail = () => {
     }
   };
   const addToCart: SubmitHandler<formInput> = async (data) => {
-    console.log({
+    const cartItemToAdd = {
       userID: user?._id,
       products: [{ ...data, currentPrice: product?.price }],
-    });
-    // const cartWithItem:CartItem = {}
-    // cartID: 66b0e1902570f3f2ca52290d
+    };
+    console.log(cartItemToAdd)
+    try {
+      const response = await fetch(`http://localhost:3000/carts/${cartIDLocal}`, {
+        method:"put",
+        body: JSON.stringify(cartItemToAdd),
+        headers:{
+          'content-type':"application/json"
+        }
+      })
+      if (response.ok){
+        alert("Added to cart")
+      } 
+      else{
+        alert("Failed to add to cart")
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
   useEffect(() => {
     fetchOneProduct();
